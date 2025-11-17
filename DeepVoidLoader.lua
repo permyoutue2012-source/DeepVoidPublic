@@ -1,5 +1,52 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+-- Supported Games List
+local SupportedGames = {
+    [6182305461] = {
+        Name = "Infamy",
+        ScriptURL = "https://raw.githubusercontent.com/permyoutue2012-source/DeepVoidPublic/refs/heads/main/DeepVoidInfamy.lua"
+    }
+    -- Add more games here in the future:
+    -- [gameId] = {Name = "Game Name", ScriptURL = "https://raw.githubusercontent.com/..."}
+}
+
+-- Function to load game script
+local function loadGameScript()
+    local currentGameId = game.PlaceId
+    local supportedGame = SupportedGames[currentGameId]
+    
+    if supportedGame then
+        Rayfield:Notify({
+            Title = "Game Detected",
+            Content = "Loading " .. supportedGame.Name .. " script...",
+            Duration = 3,
+        })
+        
+        -- Load the game-specific script
+        local success, errorMessage = pcall(function()
+            loadstring(game:HttpGet(supportedGame.ScriptURL))()
+        end)
+        
+        if not success then
+            Rayfield:Notify({
+                Title = "Load Error",
+                Content = "Failed to load " .. supportedGame.Name .. " script: " .. errorMessage,
+                Duration = 6,
+            })
+        end
+    else
+        Rayfield:Notify({
+            Title = "Game Not Supported",
+            Content = "This game is not currently supported by DeepVoid Hub.",
+            Duration = 6,
+        })
+    end
+end
+
+-- Check if current game is supported and auto-load
+local currentGameId = game.PlaceId
+local supportedGame = SupportedGames[currentGameId]
+
 local Window = Rayfield:CreateWindow({
    Name = "DeepVoid Loader",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
@@ -33,70 +80,42 @@ local Window = Rayfield:CreateWindow({
       FileName = "DeepVoidKey", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
       SaveKey = false, -- The user's key will be saved, but if you change the key, they will be unable to use your script
       GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"https://pastebin.com/raw/DPkEXv2D"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+      Key = {"https://pastebin.com/raw/DPkEXv2D"}, -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+      
+      -- Auto-load the game script when key is validated
+      Callback = function(ValidKey)
+          if ValidKey then
+              if supportedGame then
+                  -- Wait a moment for the UI to settle, then load the game script
+                  task.spawn(function()
+                      wait(1)
+                      loadGameScript()
+                  end)
+              else
+                  Rayfield:Notify({
+                      Title = "Key Valid",
+                      Content = "Key accepted! However, this game is not supported.",
+                      Duration = 5,
+                  })
+              end
+          end
+      end
    }
 })
 
--- Supported Games List
-local SupportedGames = {
-    [6182305461] = {
-        Name = "Infamy",
-        ScriptURL = "https://raw.githubusercontent.com/permyoutue2012-source/DeepVoid/refs/heads/main/DeepVoid-Infamy.lua?token=GHSAT0AAAAAADPMVHYTXUTEKN2WPRHGL4LK2I2W3LA"
-    }
-    -- Add more games here in the future:
-    -- [gameId] = {Name = "Game Name", ScriptURL = "https://raw.githubusercontent.com/..."}
-}
-
--- Main Tab
+-- Main Tab (only show if game is not supported or for manual loading)
 local MainTab = Window:CreateTab("Loader", 4483362458) -- Title, Image
 
 -- Section
 local MainTabSection = MainTab:CreateSection("Game Loader")
 
--- Function to check current game and load appropriate script
-local function loadGameScript()
-    local currentGameId = game.PlaceId
-    local supportedGame = SupportedGames[currentGameId]
-    
-    if supportedGame then
-        Rayfield:Notify({
-            Title = "Game Detected",
-            Content = "Loading " .. supportedGame.Name .. " script...",
-            Duration = 3,
-        })
-        
-        -- Load the game-specific script
-        local success, errorMessage = pcall(function()
-            loadstring(game:HttpGet(supportedGame.ScriptURL))()
-        end)
-        
-        if not success then
-            Rayfield:Notify({
-                Title = "Load Error",
-                Content = "Failed to load " .. supportedGame.Name .. " script: " .. errorMessage,
-                Duration = 6,
-            })
-        end
-    else
-        Rayfield:Notify({
-            Title = "Game Not Supported",
-            Content = "This game is not currently supported by DeepVoid Hub.",
-            Duration = 6,
-        })
-        
-        -- Show current game ID for debugging
-        print("Current Game ID:", currentGameId)
-        print("Game Name:", game:GetService("MarketplaceService"):GetProductInfo(currentGameId).Name)
-    end
-end
-
--- Function to get current game info
+-- Display current game info
 local function getCurrentGameInfo()
     local currentGameId = game.PlaceId
     local supportedGame = SupportedGames[currentGameId]
     
     if supportedGame then
-        return supportedGame.Name .. " (Supported)"
+        return supportedGame.Name .. " (Supported - Auto-loading after key)"
     else
         local gameName = "Unknown Game"
         local success, result = pcall(function()
@@ -109,14 +128,13 @@ local function getCurrentGameInfo()
     end
 end
 
--- Display current game info
 local CurrentGameLabel = MainTab:CreateLabel({
     Name = "Current Game: " .. getCurrentGameInfo(),
 })
 
--- Load Game Button
+-- Manual Load Button (useful if auto-load fails or for unsupported games)
 local Button = MainTab:CreateButton({
-   Name = "Load Game Script",
+   Name = "Manual Load Game Script",
    Callback = function()
        loadGameScript()
    end,
@@ -136,28 +154,25 @@ end
 local InstructionsSection = MainTab:CreateSection("Instructions")
 
 local InstructionsLabel = MainTab:CreateLabel({
-    Name = "1. Make sure you're in a supported game",
+    Name = "1. Enter your key to auto-load supported games",
 })
 
 local InstructionsLabel2 = MainTab:CreateLabel({
-    Name = "2. Click 'Load Game Script' to load the hub",
+    Name = "2. Use 'Manual Load' if auto-load fails",
 })
 
 local InstructionsLabel3 = MainTab:CreateLabel({
-    Name = "3. Use the new window that appears",
+    Name = "3. Check supported games list above",
 })
 
 -- Auto-detect and notify on script start
 task.spawn(function()
     wait(2) -- Wait a bit for the UI to load
     
-    local currentGameId = game.PlaceId
-    local supportedGame = SupportedGames[currentGameId]
-    
     if supportedGame then
         Rayfield:Notify({
             Title = "DeepVoid Loader",
-            Content = "Welcome! " .. supportedGame.Name .. " is supported. Click 'Load Game Script' to start.",
+            Content = "Welcome! " .. supportedGame.Name .. " is supported. Enter your key to auto-load.",
             Duration = 8,
         })
     else
