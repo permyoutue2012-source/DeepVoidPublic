@@ -1,64 +1,70 @@
--- Supported Games List
-local SupportedGames = {
-    [6182305461] = {
-        Name = "Infamy",
-        Script = "loadstring(game:HttpGet('https://raw.githubusercontent.com/permyoutue2012-source/DeepVoidPublic/refs/heads/main/DeepVoidInfamy.lua'))()"
-    }
-    -- Add more games here like:
-    -- [123456789] = {
-    --     Name = "Another Game",
-    --     Script = "loadstring(game:HttpGet('https://raw.githubusercontent.com/.../script.lua'))()"
-    -- }
-}
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Check if current game is supported
-local currentGame = SupportedGames[game.PlaceId]
+local Window = Rayfield:CreateWindow({
+   Name = "DeepVoid Loader",
+   Icon = 0,
+   LoadingTitle = "DeepVoid Is Made By One Person",
+   LoadingSubtitle = "by DeepVirus",
+   ShowText = "DeepVoid",
+   Theme = "Default",
+   ToggleUIKeybind = "K",
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+   ConfigurationSaving = {
+      Enabled = false,
+      FolderName = "DeepVoid",
+      FileName = "DeepVoidSave"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+   KeySystem = true,
+   KeySettings = {
+      Title = "DeepVoid Loader",
+      Subtitle = "Key System",
+      Note = "In the Discord",
+      FileName = "DeepVoidKey",
+      SaveKey = false,
+      GrabKeyFromSite = true,
+      Key = {"https://pastebin.com/raw/DPkEXv2D"}
+   }
+})
 
-if currentGame then
-    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-    
-    local Window = Rayfield:CreateWindow({
-       Name = "DeepVoid Loader - " .. currentGame.Name,
-       Icon = 0,
-       LoadingTitle = "DeepVoid Is Made By One Person",
-       LoadingSubtitle = "by DeepVirus",
-       ShowText = "DeepVoid",
-       Theme = "Default",
-       ToggleUIKeybind = "K",
-       DisableRayfieldPrompts = false,
-       DisableBuildWarnings = false,
-       ConfigurationSaving = {
-          Enabled = false,
-          FolderName = "DeepVoid",
-          FileName = "DeepVoidSave"
-       },
-       Discord = {
-          Enabled = false,
-          Invite = "noinvitelink",
-          RememberJoins = true
-       },
-       KeySystem = true,
-       KeySettings = {
-          Title = "DeepVoid Loader",
-          Subtitle = "Key System",
-          Note = "In the Discord",
-          FileName = "DeepVoidKey",
-          SaveKey = false,
-          GrabKeyFromSite = true,
-          Key = {"https://pastebin.com/raw/DPkEXv2D"},
-          Callback = function(ValidKey)
-              if ValidKey then
-                  -- Run the specific script for this game
-                  loadstring(currentGame.Script)()
-              end
-          end
-       }
-    })
-else
-    -- Game not supported
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "DeepVoid",
-        Text = "This game is not supported.",
-        Duration = 5
-    })
-end
+-- Main Tab
+local MainTab = Window:CreateTab("Loader", 4483362458)
+
+-- Section
+local MainTabSection = MainTab:CreateSection("Game Loader")
+
+-- Infamy Button
+local Button = MainTab:CreateButton({
+   Name = "Infamy",
+   Callback = function()
+       Rayfield:Notify({
+           Title = "Loading Infamy",
+           Content = "Loading DeepVoid Infamy script...",
+           Duration = 3,
+       })
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/permyoutue2012-source/DeepVoidPublic/refs/heads/main/DeepVoidInfamy.lua"))()
+   end,
+})
+
+-- Supported Games Section
+local SupportedGamesSection = MainTab:CreateSection("Supported Games")
+
+local GameLabel = MainTab:CreateLabel({
+    Name = "✓ Infamy (ID: 6182305461)",
+})
+
+-- Instructions Section
+local InstructionsSection = MainTab:CreateSection("Instructions")
+
+local InstructionsLabel = MainTab:CreateLabel({
+    Name = "1. Enter your key first",
+})
+
+local InstructionsLabel2 = MainTab:CreateLabel({
+    Name = "2. Click the Infamy button to load the hub",
+})
